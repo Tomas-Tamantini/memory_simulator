@@ -1,4 +1,15 @@
+import os
+from typing import List
+
 from models.command import Command
+
+
+def get_commands_from_input_file(input_file_path: str) -> List[Command]:
+    if not os.path.isfile(input_file_path):
+        raise ValueError(f'Could not find file: {input_file_path}')
+    with open(input_file_path) as f:
+        lines = f.readlines()
+    return [decode_command(cmd) for cmd in lines if len(cmd.strip()) > 0]
 
 
 def decode_command(command: str) -> Command:
@@ -24,6 +35,7 @@ def decode_command(command: str) -> Command:
 
 
 def _decode_address(address_as_str: str, command: str) -> int:
+    address = -1
     try:
         address = int(address_as_str)
     except ValueError:
