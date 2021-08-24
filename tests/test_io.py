@@ -1,6 +1,6 @@
 import pytest
 
-from models.str_to_command import decode_command
+from models.load_commands import decode_command
 
 
 @pytest.mark.parametrize('invalid_write_cmd', [
