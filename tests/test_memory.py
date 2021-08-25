@@ -18,4 +18,4 @@ def test_read_command_increments_read_and_write_numbers():
         Command(address=4000, is_write=True, data="1" * 32),
     ]
     mem.execute(commands)
-    assert mem.reads == 3 and mem.writes == 4
+    assert mem.reads == 3 and mem.writes == 4 and mem.misses + mem.hits == mem.reads
