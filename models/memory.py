@@ -1,5 +1,6 @@
 from typing import List
 
+from models.cache_memory import CacheMemory
 from models.command import Command
 
 
@@ -9,6 +10,7 @@ class Memory:
         self.writes = 0
         self.hits = 0
         self.misses = 0
+        self.__cache = CacheMemory()
         self.__log = []
 
     @property
@@ -26,12 +28,20 @@ class Memory:
 
     def _execute_command(self, command: Command) -> None:
         if command.is_write:
+            self.__cache.write(command.address, command.data)
             self.writes += 1
-            self.__log.append(command.as_raw_str + " W")
+            out_char = 'W'
         else:
+            is_hit = self.__cache.read(command.address)
             self.reads += 1
-            self.hits += 1
-            self.__log.append(command.as_raw_str + " H")
+            if is_hit:
+                out_char = 'H'
+                self.hits += 1
+            else:
+                out_char = 'M'
+                self.misses += 1
+
+        self.__log.append(command.as_raw_str + ' ' + out_char)
 
     @property
     def header(self) -> str:
