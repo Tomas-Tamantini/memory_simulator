@@ -1,8 +1,14 @@
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
 class Command:
-    def __init__(self, is_write: bool):
-        self.is_write = is_write
+    address: int
+    is_write: bool
+    data: Optional[str] = None
 
-
-def decode_command(command: str) -> Command:
-    is_write = command[2] == '1'
-    return Command(is_write)
+    @property
+    def as_raw_str(self):
+        out_str = f'{self.address} {"1" if self.is_write else "0"}'
+        return out_str if not self.is_write else out_str + " " + self.data
