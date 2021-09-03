@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "structs.h"
+#include "models/structs.h"
 
 
 void DecodeReqLine(char *reqLine, int *endereco, int *operacao, char *dados) {
@@ -77,7 +77,7 @@ char CPUreq(int endereco, int operacao, char *dados, Cache& cache, char *Mem) {
             if(cache.blocos[index].sujo) {
                 MemoryWrite(cache, index, Mem);
             }
-            printf("\nMISS!");
+            printf("MISS!\n");
             cache.blocos[index].sujo = 0;
             // atualiza a cache com os dados do endereço requisitado
             cache.AtualizarBloco(tag, index, block_offset, Mem, spatial_addr);
@@ -85,20 +85,25 @@ char CPUreq(int endereco, int operacao, char *dados, Cache& cache, char *Mem) {
         }
         
         cache.hits++;
-        printf("\nHIT!");
+        printf("HIT!\n");
         //for(int i=0; i<32; i++) printf("%c", cache.blocos[index].dados[block_offset + i]);
         return 'H';
     }
         
 }
 
-int main() {
-    struct Cache cache;
+int main(int argc, char *argv[]) {
+    if(argc != 2) {
+        printf("Usage: ./MemSimulator.out [CPU request file]\n");
+        return 1;
+    }
+
+    Cache cache;
     cache.iniciarCache();
 
     char Memoria[32768];
     
-    FILE* input_file=fopen("input_mod.txt", "r+t");
+    FILE* input_file=fopen(argv[1], "r+t");
     FILE* output_file=fopen("result_C.txt", "w+t");
    
     if(input_file != NULL && output_file != NULL) {
@@ -115,7 +120,7 @@ int main() {
 
             DecodeReqLine(reqLine, &endereco, &operacao, dados);
 
-            /* escreve os resultados no arquivo de saída*/
+            /* escreve as requisições e seu tipo no arquivo de saída */
             fprintf(output_file, "%d %d ", endereco, operacao);
             if(operacao == 1) {
                 for(int i=0; i<32; i++) fprintf(output_file, "%c", dados[i]);
@@ -123,6 +128,7 @@ int main() {
             fprintf(output_file, " %c\n", CPUreq(endereco,operacao,dados,cache,Memoria));
         }
 
+        /* escreve os resultados no arquivo de saída*/
         fprintf(output_file, "\nREADS: %d\nWRITES: %d\nHITS: %d\nMISSES: %d\nHIT RATE: %f\nMISS RATE: %f", 
                     cache.reads, cache.writes, cache.hits, cache.misses, (float)cache.hits/cache.reads, (float)cache.misses/cache.reads);
 
