@@ -27,8 +27,10 @@ void Cache::AtualizarBloco(int tag, int indice, int offset, char *dados, int spa
     this->blocos[indice].tag = tag;
     this->blocos[indice].valido = 1;
     if(sizeof(dados)/8 == 32) {
+        /* atualiza a cache com os dados do store word */
         for(int i=0;i<32;i++) this->blocos[indice].dados[offset + i] = dados[i];
     } else {
+        /* escreve os dados da memória na cahce */
         for(int i=0; i<128; i++) this->blocos[indice].dados[i] = dados[spatialAddr + i];
     }
 }

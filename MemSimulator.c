@@ -10,11 +10,13 @@ void DecodeReqLine(char *reqLine, int *endereco, int *operacao, char *dados) {
         ender[aux] = reqLine[aux];
         aux++;
     }
-    *endereco = atoi(ender);
-    *operacao = reqLine[aux + 1] - '0';
+    aux++;
 
-    if(reqLine[aux + 2] != '\n') {
-        for(int i=0;i<32;i++) dados[i] = reqLine[aux + 3 + i];
+    *endereco = atoi(ender);
+    *operacao = reqLine[aux] - '0';
+    aux++;
+    if(reqLine[aux] == ' ') {
+        for(int i=0;i<32;i++) dados[i] = reqLine[aux + 1 + i];
     }
 
 }
@@ -33,21 +35,12 @@ void MemoryWrite(Cache& cache, int index, char *Mem) {
 
 
 char CPUreq(int endereco, int operacao, char *dados, Cache& cache, char *Mem) {
-    int addr[32];
-    int cp_endereco = endereco; 
-    // Codificação do endereco decimal para o binario
-    for(int i=31; i>=0; i--) {
-        addr[i] = cp_endereco % 2;
-        cp_endereco = cp_endereco / 2;
-    }
 
-    // tradução dos campos do endereço do binário para o decimal
-    int index = addr[27] * 1 + addr[26] * 2 + addr[25] * 4 + addr[24] * 8 + addr[23] * 16 + addr[22] * 32; 
-    int tag = addr[20] * 4 + addr[20] * 2 + addr[21] * 1;
-    int byte_offset = (addr[31] * 1 + addr[30] * 2) * 8;
-    int block_offset = (addr[29] * 1 + addr[28] * 2) * 32;
+    int index = (endereco & 1008) >> 4;
+    int tag = (endereco & 3072) >> 10;
+    int byte_offset = endereco & 3;
+    int block_offset = (endereco & 12) >> 2;
     int spatial_addr = index * 16 + tag * 1024;
-
     // Bloco de código responsável pela escrita
     if(operacao) {
         cache.writes++;
@@ -57,8 +50,6 @@ char CPUreq(int endereco, int operacao, char *dados, Cache& cache, char *Mem) {
         }  
 
         cache.AtualizarBloco(tag, index, block_offset, dados, spatial_addr);
-        // cache.AtualizarTag(tag, index); // atualiza o bloco após
-        // cache.AtualizarDados(index, block_offset, dados);
         cache.blocos[index].write_offset = block_offset;
         cache.blocos[index].byteOffset = byte_offset;
         cache.blocos[index].sujo = 1;
@@ -97,8 +88,7 @@ int main(int argc, char *argv[]) {
         printf("Usage: ./MemSimulator.out [CPU request file]\n");
         return 1;
     }
-
-    Cache cache;
+    struct Cache cache;
     cache.iniciarCache();
 
     char Memoria[32768];
@@ -107,28 +97,32 @@ int main(int argc, char *argv[]) {
     FILE* output_file=fopen("result_C.txt", "w+t");
    
     if(input_file != NULL && output_file != NULL) {
-        char reqLine[39];
+        char reqLine[41];
         int endereco;
         int operacao;
         char dados[32];
 
+        int controle = 0;
+
         while(!feof(input_file)) {
-            fgets(reqLine, 39, input_file);
+            fgets(reqLine, 41, input_file);
 
             /* filtro para ver se o programa leu uma linha que n existe */
             if(reqLine[0] - '0' < 0 || (reqLine[1] - '0' < 0 && reqLine[1] != ' ')) continue;
-
+            
             DecodeReqLine(reqLine, &endereco, &operacao, dados);
-
-            /* escreve as requisições e seu tipo no arquivo de saída */
+            printf(" %s ", reqLine);
+            /* escreve os resultados no arquivo de saída*/
             fprintf(output_file, "%d %d ", endereco, operacao);
             if(operacao == 1) {
                 for(int i=0; i<32; i++) fprintf(output_file, "%c", dados[i]);
+                
             }
+            printf(" %d ", controle);
             fprintf(output_file, " %c\n", CPUreq(endereco,operacao,dados,cache,Memoria));
+            controle++;
         }
 
-        /* escreve os resultados no arquivo de saída*/
         fprintf(output_file, "\nREADS: %d\nWRITES: %d\nHITS: %d\nMISSES: %d\nHIT RATE: %f\nMISS RATE: %f", 
                     cache.reads, cache.writes, cache.hits, cache.misses, (float)cache.hits/cache.reads, (float)cache.misses/cache.reads);
 
