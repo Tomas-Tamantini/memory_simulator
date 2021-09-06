@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "models/structs.h"
+#include "structs.h"
 
 
 void DecodeReqLine(char *reqLine, int *endereco, int *operacao, char dados[32]) {
