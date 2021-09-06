@@ -2,9 +2,7 @@ struct Bloco {
     int valido;
     int sujo;
     int tag;
-    char dados[128] = { '0' };
-    int write_offset;
-    int byteOffset;
+    char dados[128];
 };
 
 
@@ -20,7 +18,7 @@ struct Cache {
 };
 
 void Cache::iniciarCache() {this->hits = 0; this->misses = 0; this->reads = 0; this->writes = 0;
- for(int i = 0; i<64; i++) {this->blocos[i].valido=0;this->blocos[i].sujo = 0;this->blocos[i].tag=0;this->blocos[i].write_offset=0;this->blocos[i].byteOffset=0;}
+ for(int i = 0; i<64; i++) {this->blocos[i].valido=0;this->blocos[i].sujo = 0;this->blocos[i].tag=0;}
 }
 
 void Cache::AtualizarBloco(int tag, int indice, int bloffset, char *dados, char *Mem, int operacao) {

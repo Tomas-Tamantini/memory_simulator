@@ -11,11 +11,8 @@ if [ $resposta = "n" -o $resposta = "N" ]; then
     read reqsPath
     if [ -z "$reqsPath" ]; then 
         ./MemSimulator.out input_model.txt
-        echo "Resultados escritos em result_C.txt"
     else 
         ./MemSimulator.out $reqsPath
-        echo "-------------------------------------------------------------
-        Resultados escritos em result_C.txt"
     fi
 fi
 

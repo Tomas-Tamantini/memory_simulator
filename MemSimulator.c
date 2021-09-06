@@ -23,13 +23,11 @@ void DecodeReqLine(char *reqLine, int *endereco, int *operacao, char dados[32]) 
 
 void MemoryWrite(Cache& cache, int index, char Mem[32768]) {
     int endereco_anterior = (cache.blocos[index].tag << 10) + (index << 4);
-    int offset_anterior = cache.blocos[index].write_offset;
-    int byte_offset = cache.blocos[index].byteOffset;
-    for(int i=0; i<32; i++) { 
+    for(int i=0; i<128; i++) { 
         // byte addressing   
-        Mem[endereco_anterior + offset_anterior*32 + byte_offset*8] = cache.blocos[index].dados[offset_anterior + i];
+        Mem[endereco_anterior + i] = cache.blocos[index].dados[i];
     }
-    printf("Dados da palavra no endereço %d foram escritos na memória\n", endereco_anterior + offset_anterior<<2 + byte_offset);
+    printf("Dados do endereço espacial %d foram escritos na memória\n", endereco_anterior);
 }
 
 
@@ -51,8 +49,6 @@ char CPUreq(int endereco, int operacao, char dados[32], Cache& cache, char Mem[3
         }  
 
         cache.AtualizarBloco(tag, index, block_offset, dados, Mem, operacao);
-        cache.blocos[index].write_offset = block_offset;
-        cache.blocos[index].byteOffset = byte_offset;
         cache.blocos[index].sujo = 1;
 
         return 'W';
@@ -70,9 +66,10 @@ char CPUreq(int endereco, int operacao, char dados[32], Cache& cache, char Mem[3
                 MemoryWrite(cache, index, Mem);
             }
             printf("MISS! Dados do endereco %d não estam na cache\n", endereco);
-            cache.blocos[index].sujo = 0;
+            
             // atualiza a cache com os dados do endereço requisitado
             cache.AtualizarBloco(tag, index, block_offset, dados, Mem, operacao);
+            cache.blocos[index].sujo = 0;
             return 'M';
         }
         
@@ -106,7 +103,7 @@ int main(int argc, char *argv[]) {
     for(int i=0;i<32768;i++) Memoria[i] = '0'; // inicia a memória com todos os bits nulos
 
     FILE* input_file=fopen(argv[1], "r+t");
-    FILE* output_file=fopen("result_C.txt", "w+t");
+    FILE* output_file=fopen("result.txt", "w+t");
    
     if(input_file != NULL && output_file != NULL) {
         char reqLine[41];
@@ -114,6 +111,16 @@ int main(int argc, char *argv[]) {
         int operacao;
         char dados[32];
 
+        printf("Rodando a simulação em C...\n");
+
+        /* arquivo com até 150 requisições da CPU
+        armazena as informações para imprimir depois no arquivo de saída */
+        int enderecos[150];
+        int operacoes[150];
+        char writeReqs_data[150 * 32];
+        char respostas[150];
+
+        int line = 0;
         while(!feof(input_file)) {
             fgets(reqLine, 41, input_file);
 
@@ -122,25 +129,40 @@ int main(int argc, char *argv[]) {
             
             DecodeReqLine(reqLine, &endereco, &operacao, dados);
             
-            /* escreve os resultados no arquivo de saída */
-            fprintf(output_file, "%d %d ", endereco, operacao);
+            enderecos[line] = endereco;
+            operacoes[line] = operacao;
+
             if(operacao == 1) {
-                for(int i=0; i<32; i++) fprintf(output_file, "%c", dados[i]);
-                
+                for(int i=0; i<32; i++) writeReqs_data[line*32 + i] = dados[i];
             }
-            /* informa se é write, hit ou miss no arquivo de saída */
-            fprintf(output_file, " %c\n", CPUreq(endereco,operacao,dados,cache,Memoria));
+
+            respostas[line] = CPUreq(endereco,operacao,dados,cache,Memoria);
+            line++;
         }
 
-        fprintf(output_file, "\nREADS: %d\nWRITES: %d\nHITS: %d\nMISSES: %d\nHIT RATE: %f\nMISS RATE: %f", 
+        /* imprime os resultados no arquivo de saída */
+
+        fprintf(output_file, "READS: %d\nWRITES: %d\nHITS: %d\nMISSES: %d\nHIT RATE: %.3f\nMISS RATE: %.3f\n\n", 
                     cache.reads, cache.writes, cache.hits, cache.misses, (float)cache.hits/cache.reads, (float)cache.misses/cache.reads);
+
+        for(int i=0;i<line;i++) {
+            fprintf(output_file, "%d %d ", enderecos[i], operacoes[i]);
+            if(operacoes[i] == 1) {
+                for(int j=0;j<32;j++) fprintf(output_file, "%c", writeReqs_data[i*32 + j]);
+                fprintf(output_file, " ");
+            }
+            fprintf(output_file, "%c\n", respostas[i]);
+        }
+
 
         fclose(input_file);
         fclose(output_file);
+        printf("-------------------------------------------------------------\n\
+            Resultados escritos em result.txt\n");
         return 0;
     }
     
     printf("Erro ao carregar os arquivos de entrada/saída.");
-    return 1;
+    return 1;  
 }
 
