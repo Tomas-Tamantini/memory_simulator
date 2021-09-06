@@ -1,7 +1,7 @@
 from typing import List
 
-from models.cache_memory import CacheMemory
-from models.command import Command
+from python_implementation.models import Command
+from python_implementation.models.cache_memory import CacheMemory
 
 
 class Memory:
@@ -46,4 +46,4 @@ class Memory:
     @property
     def header(self) -> str:
         return f'READS: {self.reads}\nWRITES: {self.writes}\nHITS: {self.hits}\nMISSES: {self.misses}\n' \
-               f'HIT RATE: {self.hit_rate:.2f}\nMISS RATE: {self.miss_rate:.2f}\n\n'
+               f'HIT RATE: {self.hit_rate:.3f}\nMISS RATE: {self.miss_rate:.3f}\n\n'
