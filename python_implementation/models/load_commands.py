@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from models.command import Command
+from python_implementation.models import Command
 
 
 def get_commands_from_input_file(input_file_path: str) -> List[Command]:

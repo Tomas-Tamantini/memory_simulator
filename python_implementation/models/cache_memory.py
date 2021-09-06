@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 from typing import Tuple
 
-# Masks
-from models.data_memory import DataMemory
+from python_implementation.models.data_memory import DataMemory
 
+# Masks
 BYTE_OFFSET_MASK = 3  # 0000 0000 0000 0000 0000 0000 0000 0011
 BLOCK_OFFSET_MASK = 12  # 0000 0000 0000 0000 0000 0000 0000 1100
 BLOCK_INDEX_MASK = 1008  # 0000 0000 0000 0000 0000 0011 1111 0000

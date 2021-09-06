@@ -1,4 +1,4 @@
-from models import Memory, Command
+from python_implementation.models import Memory, Command
 
 
 def test_memory_initializes_empty():
@@ -19,3 +19,7 @@ def test_read_command_increments_read_and_write_numbers():
     ]
     mem.execute(commands)
     assert mem.reads == 3 and mem.writes == 4 and mem.misses + mem.hits == mem.reads
+
+
+def run_txt_tests():
+    pass

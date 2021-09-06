@@ -1,4 +1,4 @@
-from models import get_commands_from_input_file, Memory
+from python_implementation import get_commands_from_input_file, Memory
 
 OUTPUT_PATH = 'result.txt'
 
@@ -22,4 +22,4 @@ def main(input_file_path: str):
 
 if __name__ == '__main__':
     # TODO: Read file name from argv
-    main('input_model.txt')
+    main('python_implementation/tests/txt_tests/in5.txt')

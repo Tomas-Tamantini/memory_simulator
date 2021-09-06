@@ -1,7 +1,7 @@
 from typing import List
 
-from models.cache_memory import CacheMemory
-from models.command import Command
+from python_implementation.models import Command
+from python_implementation.models.cache_memory import CacheMemory
 
 
 class Memory:
