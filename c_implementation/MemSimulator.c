@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     for(int i=0;i<32768;i++) Memoria[i] = '0'; // inicia a memória com todos os bits nulos
 
     FILE* input_file=fopen(argv[1], "r+t");
-    FILE* output_file=fopen("../result.txt", "w+t");
+    FILE* output_file=fopen("result.txt", "w+t");
    
     if(input_file != NULL && output_file != NULL) {
         char reqLine[41];
