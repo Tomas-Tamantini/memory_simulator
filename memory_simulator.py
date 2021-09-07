@@ -31,7 +31,7 @@ if __name__ == '__main__':
     if len(args) > 2 and 'c' in args[2].lower():
         print(f'Running MemorySimulator (C implementation) - Input file: {input_path}')
         try:
-            call(["c_implementation/MemSimulator.out"])
+            call(["c_implementation/MemSimulator.out", input_path])
         except SubprocessError:
             main(input_path)
     else:
