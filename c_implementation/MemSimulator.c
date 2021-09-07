@@ -31,7 +31,7 @@ void MemoryWrite(Cache& cache, int index, char Mem[32768]) {
 }
 
 
-
+/* algoritmo principal - abordagem de write allocation */
 char CPUreq(int endereco, int operacao, char dados[32], Cache& cache, char Mem[32768]) {
 
     int index = (endereco & 1008) >> 4;
@@ -103,13 +103,10 @@ int main(int argc, char *argv[]) {
     for(int i=0;i<32768;i++) Memoria[i] = '0'; // inicia a memória com todos os bits nulos
 
     FILE* input_file=fopen(argv[1], "r+t");
-    FILE* output_file=fopen("result.txt", "w+t");
+    FILE* output_file=fopen("../result.txt", "w+t");
    
     if(input_file != NULL && output_file != NULL) {
         char reqLine[41];
-        int endereco;
-        int operacao;
-        char dados[32];
 
         printf("Rodando a simulação em C...\n");
 
@@ -122,21 +119,15 @@ int main(int argc, char *argv[]) {
 
         int line = 0;
         while(!feof(input_file)) {
-            fgets(reqLine, 41, input_file);
+            fgets(reqLine, 41, input_file);  // armazena o conteúdo da linha atual
 
             /* filtro para ver se o programa leu uma linha que n existe */
             if(reqLine[0] - '0' < 0 || (reqLine[1] - '0' < 0 && reqLine[1] != ' ')) continue;
             
-            DecodeReqLine(reqLine, &endereco, &operacao, dados);
-            
-            enderecos[line] = endereco;
-            operacoes[line] = operacao;
+            DecodeReqLine(reqLine, &enderecos[line], &operacoes[line], &writeReqs_data[line*32]);
 
-            if(operacao == 1) {
-                for(int i=0; i<32; i++) writeReqs_data[line*32 + i] = dados[i];
-            }
-
-            respostas[line] = CPUreq(endereco,operacao,dados,cache,Memoria);
+            /* chama o algoritmo principal para retornar o char 'W', 'H' ou 'M' */
+            respostas[line] = CPUreq(enderecos[line],operacoes[line],&writeReqs_data[line*32],cache,Memoria);
             line++;
         }
 
