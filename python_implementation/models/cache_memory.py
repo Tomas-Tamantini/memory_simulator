@@ -56,6 +56,7 @@ class CacheMemory:
             return True  # Is hit
         if block.is_dirty:
             self.__write_back(block)
+        block.tag = tag
         self.__read_from_memory(block, address)
         return False
 
