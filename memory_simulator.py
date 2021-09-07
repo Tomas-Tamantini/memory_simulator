@@ -1,4 +1,5 @@
 import sys
+from subprocess import SubprocessError, call
 
 from python_implementation import get_commands_from_input_file, Memory
 
@@ -29,7 +30,10 @@ if __name__ == '__main__':
     input_path = 'input_model.txt' if len(args) < 2 else args[1]
     if len(args) > 2 and 'c' in args[2].lower():
         print(f'Running MemorySimulator (C implementation) - Input file: {input_path}')
-        # TODO: Run C implementation here
+        try:
+            call(["c_implementation/MemSimulator.out"])
+        except SubprocessError:
+            main(input_path)
     else:
         print(f'Running MemorySimulator (Python implementation) - Input file: {input_path}')
         main(input_path)
