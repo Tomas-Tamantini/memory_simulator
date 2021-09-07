@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 from python_implementation.models.data_memory import DataMemory
 
@@ -22,17 +22,24 @@ def destructure_address(address: int) -> Tuple[int, int, int, int, int]:
 
 class Block:
     def __init__(self):
+        self.data = 'X' * 128
         self.is_dirty = False
         self.is_valid = False
         self.tag = 0
 
-    def write(self, tag, data, block_offset):
-        # TODO:
-        # If block is not valid, fetch 128 bits from memory
-        # Write 32 bits from data
+    def write(self, tag: int, data: str, block_offset: int, data_memory: Optional[DataMemory] = None,
+              block_index: int = 0):
+        new_data = list(self.data) if self.is_valid else list(data_memory.read(self.address(block_index)))
+        for i in range(32):
+            new_data[i + 32 * block_offset] = data[i]
+        self.data = ''.join(new_data)
         self.tag = tag
         self.is_valid = True
         self.is_dirty = True
+
+
+    def address(self, block_index: int):
+        return self.tag * 1024 + block_index * 16
 
 
 class CacheMemory:
@@ -45,8 +52,8 @@ class CacheMemory:
         _, word_index, block_index, tag, spatial_address = destructure_address(address)
         block = self.__blocks[block_index]
         if block.is_dirty and block.tag != tag:
-            self.__write_back(block)
-        block.write(tag, data, word_index)
+            self.__write_back(block, address)
+        block.write(tag, data, word_index, self.__data_memory)
 
     def read(self, address: int) -> bool:
         """Reads from given address. If it's a hit, returns True, and a miss returns False"""
@@ -55,17 +62,17 @@ class CacheMemory:
         if block.is_valid and block.tag == tag:
             return True  # Is hit
         if block.is_dirty:
-            self.__write_back(block)
+            self.__write_back(block, address)
         block.tag = tag
         self.__read_from_memory(block, address)
         return False
 
-    def __write_back(self, block: Block):
-        # TODO: Implement this method
+    def __write_back(self, block: Block, address: int):
+        self.__data_memory.write(address, block.data)
         block.is_valid = True
         block.is_dirty = False
 
     def __read_from_memory(self, block: Block, address: int):
-        # TODO: Implement this method
+        block.data = self.__data_memory.read(address)
         block.is_valid = True
         block.is_dirty = False
